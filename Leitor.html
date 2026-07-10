@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atacadão PDV - Sistema Completo</title>
-    <!-- Biblioteca do Scanner de Câmera -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -13,7 +12,7 @@
             --cinza-fundo: #f5f5f5;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 60px; }
+        body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 80px; }
         
         /* Cabeçalho */
         header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -57,16 +56,28 @@
 
         /* Lista de Histórico */
         .item-historico { padding: 12px; border-left: 4px solid var(--laranja-atacadao); background: #fff3e0; margin-bottom: 10px; border-radius: 0 6px 6px 0; font-size: 14px; }
+
+        /* Seção de Créditos Exclusiva */
+        .rodape-creditos {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            padding: 15px 10px;
+            margin-top: 25px;
+            border-top: 1px solid #e0e0e0;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .rodape-creditos strong { color: var(--azul-atacadao); }
+        .rodape-creditos span { display: block; font-size: 11px; color: #999; margin-top: 4px; font-style: italic; }
     </style>
 </head>
 <body>
 
     <header>🛒 Atacadão PDV Móvel</header>
 
-    <!-- ABA 1: CAIXA -->
     <div id="tela-caixa" class="tela ativa">
-        
-        <!-- SELETOR DE FUNÇÃO (CÂMERA OU FÍSICO) -->
         <div class="card">
             <h2>🔌 Escolha a Origem do Bip</h2>
             <div class="seletor-modo">
@@ -74,14 +85,12 @@
                 <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Leitor Físico (USB/BT)</button>
             </div>
 
-            <!-- SUB-TELA: MODO CÂMERA -->
             <div id="entrada-camera" class="modo-leitura ativo">
                 <div id="camera-scanner"></div>
                 <input type="text" id="codigo-manual" placeholder="Código de barras manual se falhar...">
                 <button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button>
             </div>
 
-            <!-- SUB-TELA: MODO LEITOR FÍSICO -->
             <div id="entrada-fisico" class="modo-leitura">
                 <p style="font-size: 13px; color: #666; margin-bottom: 5px; text-align: center;">⚠️ Mantenha o foco neste campo verde e comece a bipar!</p>
                 <input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off">
@@ -95,15 +104,18 @@
                     <tr><th>Item</th><th>Qtd</th><th>Preço</th></tr>
                 </thead>
                 <tbody id="lista-carrinho">
-                    <!-- Itens do carrinho aparecem aqui -->
-                </tbody>
+                    </tbody>
             </table>
             <div class="total-box">Total: R$ <span id="valor-total">0.00</span></div>
             <button class="btn-acao" style="background: #2e7d32; margin-top: 15px;" onclick="finalizarCompra()">🔒 Finalizar Compra</button>
         </div>
+
+        <div class="rodape-creditos">
+            Criado por <strong>Victor Caldeira de Moura</strong>
+            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
+        </div>
     </div>
 
-    <!-- ABA 2: CADASTRO DE PRODUTOS -->
     <div id="tela-cadastro" class="tela">
         <div class="card">
             <h2>➕ Cadastrar Novo Produto</h2>
@@ -120,14 +132,17 @@
                     <tr><th>Código</th><th>Produto</th><th>Preço</th></tr>
                 </thead>
                 <tbody id="lista-estoque">
-                    <!-- Produtos cadastrados aparecem aqui -->
-                </tbody>
+                    </tbody>
             </table>
             <button class="btn-acao btn-limpar" onclick="limparEstoque()">Apagar Todo o Estoque</button>
         </div>
+
+        <div class="rodape-creditos">
+            Criado por <strong>Victor Caldeira de Moura</strong>
+            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
+        </div>
     </div>
 
-    <!-- ABA 3: HISTÓRICO DE COMPRAS -->
     <div id="tela-historico" class="tela">
         <div class="card">
             <h2>📊 Faturamento Acumulado</h2>
@@ -139,26 +154,28 @@
         <div class="card">
             <h2>📜 Últimas Compras Passadas</h2>
             <div id="lista-historico">
-                <!-- Compras salvas aparecem aqui -->
-            </div>
+                </div>
             <button class="btn-acao btn-limpar" onclick="limparHistorico()">Limpar Histórico de Vendas</button>
+        </div>
+
+        <div class="rodape-creditos">
+            Criado por <strong>Victor Caldeira de Moura</strong>
+            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
         </div>
     </div>
 
-    <!-- NAVEGAÇÃO POR ABAS PRINCIPAIS -->
     <nav>
         <button id="btn-caixa" class="ativo" onclick="mudarAba('caixa')">🛒 Caixa</button>
         <button id="btn-cadastro" onclick="mudarAba('cadastro')">📦 Cadastrar</button>
         <button id="btn-historico" onclick="mudarAba('historico')">📜 Histórico</button>
     </nav>
 
-    <!-- LÓGICA DO SISTEMA -->
     <script>
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
         let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
         let carrinho = [];
         let html5QrcodeScanner;
-        let modoAtualLeitor = 'camera'; // Pode ser 'camera' ou 'fisico'
+        let modoAtualLeitor = 'camera';
 
         // --- CONTROLE DE MUDANÇA DE MODO (CÂMERA VS FÍSICO) ---
         function mudarModoLeitor(modo) {
@@ -185,20 +202,18 @@
             }
         }
 
-        // Força o foco de volta no campo do leitor físico se o usuário clicar fora sem querer
         document.addEventListener("click", () => {
             if (document.getElementById('tela-caixa').classList.contains('ativa')) {
                 focarLeitorFisico();
             }
         });
 
-        // Escuta o comando "Enter" enviado automaticamente pelo Leitor Físico
         document.getElementById("codigo-leitor-fisico").addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
                 if (this.value.trim() !== "") {
                     biparProduto(this.value.trim());
-                    this.value = ""; // Limpa para o próximo bip
+                    this.value = "";
                 }
             }
         });
@@ -232,9 +247,19 @@
                     (codigoLido) => {
                         biparProduto(codigoLido);
                     },
-                    (erro) => { /* Oculta logs de foco da câmera */ }
+                    (erro) => {}
                 ).catch(err => console.log("Erro câmera: ", err));
             }
+        }
+
+        /* * FUNÇÃO EXCLUSIVA DE CRÉDITOS
+         * Criado com muito esforço por Victor Caldeira de Moura
+         */
+        function exibirCreditosDesenvolvedor() {
+            console.log("========================================");
+            console.log("SISTEMA DESENVOLVIDO POR VICTOR CALDEIRA DE MOURA");
+            console.log("Criado com muito esforço por Victor Caldeira de Moura");
+            console.log("========================================");
         }
 
         function pararCamera() {
@@ -381,6 +406,7 @@
             renderizarEstoque();
             renderizarHistorico();
             iniciarCamera();
+            exibirCreditosDesenvolvedor(); // Executa a função dedicada de créditos
         };
     </script>
 </body>
