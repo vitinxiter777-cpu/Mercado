@@ -3,88 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV Mercado</title>
+    <title>Sistema PDV - Totalmente Configurável</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* CSS Básico para o site não quebrar */
-        body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding-bottom: 70px; }
-        .tela { display: none; padding: 15px; }
+        :root { --azul-atacadao: #1565c0; --cinza-fundo: #f5f5f5; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 80px; overflow-x: hidden; }
+        header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        nav button { background: none; border: none; padding: 12px; font-size: 14px; font-weight: bold; color: #777; flex: 1; text-align: center; cursor: pointer; transition: 0.2s; }
+        nav button.ativo { color: var(--azul-atacadao); border-top: 3px solid var(--azul-atacadao); background: rgba(21, 101, 192, 0.05); }
+        .tela { padding: 15px; display: none; max-width: 600px; margin: 0 auto; }
         .tela.ativa { display: block; }
-        nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ccc; z-index: 1000; }
-        nav button { flex: 1; padding: 15px; border: none; background: white; font-weight: bold; cursor: pointer; }
-        nav button.ativo { color: blue; border-top: 3px solid blue; }
-        .btn-acao { width: 100%; padding: 15px; background: blue; color: white; border: none; margin-top: 10px; border-radius: 5px; font-weight: bold; }
-        #camera-scanner { width: 100%; height: 250px; background: black; border-radius: 5px; }
-        h2 { color: #333; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 15px; }
+        h2 { margin-bottom: 15px; font-size: 18px; color: var(--azul-atacadao); border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        input, button.btn-acao { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        button.btn-acao { background: var(--azul-atacadao); color: white; font-weight: bold; border: none; cursor: pointer; }
+        .btn-limpar { background: #d32f2f; margin-top: 15px; }
+        .seletor-modo { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-modo { flex: 1; padding: 10px; border: 2px solid #ccc; background: white; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-modo.ativo { border-color: var(--azul-atacadao); background: var(--azul-atacadao); color: white; }
+        .modo-leitura { display: none; }
+        .modo-leitura.ativo { display: block; }
+        #camera-scanner { width: 100%; height: 250px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+        #camera-scanner video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+        .campo-leitor-fisico { background: #e8f5e9; border: 2px dashed #2e7d32 !important; text-align: center; font-weight: bold; color: #2e7d32; }
+        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; }
     </style>
 </head>
 <body>
 
+    <header id="nome-loja-topo">Mercado</header>
+
     <div id="tela-caixa" class="tela ativa">
-        <h2>🛒 Caixa</h2>
-        <div id="camera-scanner"></div>
-        <input type="text" id="cod" placeholder="Código do produto..." style="width:100%; padding:10px; margin-top:10px; box-sizing:border-box;">
-        <button class="btn-acao" onclick="biparManual()">Lançar Manualmente</button>
-        <h3 style="margin-top: 20px;">Total: R$ <span id="valor-total">0.00</span></h3>
+        <div class="card">
+            <h2>🔌 Origem do Bip</h2>
+            <div class="seletor-modo">
+                <button id="btn-modo-camera" class="btn-modo ativo" onclick="mudarModoLeitor('camera')">📷 Câmera</button>
+                <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Físico</button>
+            </div>
+            <div id="entrada-camera" class="modo-leitura ativa"><div id="camera-scanner"></div><input type="text" id="codigo-manual" placeholder="Manual..."><button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button></div>
+            <div id="entrada-fisico" class="modo-leitura"><input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="BIPAR AQUI..." autocomplete="off"></div>
+        </div>
+        <div class="card">
+            <h2>🛒 Cupom</h2>
+            <table style="width:100%"><tbody id="lista-carrinho"></tbody></table>
+            <div class="total-box">Total: R$ <span id="valor-total">0.00</span></div>
+            <button class="btn-acao" style="background: #2e7d32;" onclick="finalizarCompra()">🔒 Finalizar</button>
+        </div>
     </div>
 
     <div id="tela-cadastro" class="tela">
-        <h2>⚙️ Configurações</h2>
-        <button class="btn-acao" onclick="passoSair()" id="btn-sair" style="background: #d32f2f;">🚪 Sair da Conta</button>
+        <div class="card">
+            <h2>⚙️ Configurações</h2>
+            <input type="text" id="config-nome-loja" placeholder="Nome da Loja">
+            <button class="btn-acao" onclick="salvarConfig()">Salvar Configurações</button>
+            <div id="container-sair" style="margin-top: 20px;"><button class="btn-acao btn-limpar" id="btn-sair-main" onclick="passoSair()">🚪 Sair da Conta</button></div>
+        </div>
+        <div class="card">
+            <h2>➕ Cadastrar Produto</h2>
+            <input type="text" id="cad-codigo" placeholder="Código">
+            <input type="text" id="cad-nome" placeholder="Nome">
+            <input type="number" step="0.01" id="cad-preco" placeholder="Preço">
+            <button class="btn-acao" onclick="salvarProduto()">Salvar Produto</button>
+        </div>
+    </div>
+
+    <div id="tela-historico" class="tela">
+        <div class="card"><h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2></div>
+        <div class="card" id="lista-historico"></div>
     </div>
 
     <nav>
-        <button class="ativo" onclick="mudarAba('caixa')">🛒 Caixa</button>
-        <button onclick="mudarAba('cadastro')">⚙️ Cadastro</button>
+        <button id="btn-caixa" class="ativo" onclick="mudarAba('caixa')">🛒 Caixa</button>
+        <button id="btn-cadastro" onclick="mudarAba('cadastro')">📦 Cadastrar</button>
+        <button id="btn-historico" onclick="mudarAba('historico')">📜 Histórico</button>
     </nav>
 
     <script>
-        // Função para alternar entre telas (Sem conflitos)
+        let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
+        let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
+        let carrinho = [];
+        let html5QrcodeScanner = null;
+
         function mudarAba(aba) {
             document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('ativo'));
             document.getElementById('tela-' + aba).classList.add('ativa');
-            event.currentTarget.classList.add('ativo');
+            document.getElementById('btn-' + aba).classList.add('ativo');
+            if (aba === 'caixa') iniciarCamera(); else pararCamera();
         }
 
-        // Sistema de Sair Blindado
-        let etapa = 0;
+        async function iniciarCamera() {
+            if (!html5QrcodeScanner) {
+                try {
+                    html5QrcodeScanner = new Html5Qrcode("camera-scanner");
+                    await html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (c) => biparProduto(c));
+                } catch(e) { console.log("Câmera não iniciou"); }
+            }
+        }
+
+        async function pararCamera() {
+            if (html5QrcodeScanner) {
+                try { await html5QrcodeScanner.stop(); html5QrcodeScanner = null; } catch(e) {}
+            }
+        }
+
+        function biparProduto(codigo) {
+            let p = produtos[codigo];
+            if (p) { carrinho.push(p); renderizarCarrinho(); }
+            else alert("Produto não cadastrado!");
+        }
+
+        function renderizarCarrinho() {
+            let tbody = document.getElementById("lista-carrinho"); tbody.innerHTML = "";
+            let total = 0;
+            carrinho.forEach(i => { total += i.preco; tbody.innerHTML += `<tr><td>${i.nome}</td><td>R$ ${i.preco.toFixed(2)}</td></tr>`; });
+            document.getElementById("valor-total").innerText = total.toFixed(2);
+        }
+
+        function finalizarCompra() {
+            let total = carrinho.reduce((s, i) => s + i.preco, 0);
+            historico.unshift({ data: new Date().toLocaleDateString(), total: total });
+            localStorage.setItem("historicoCompras", JSON.stringify(historico));
+            carrinho = []; renderizarCarrinho(); renderizarHistorico();
+        }
+
+        function renderizarHistorico() {
+            let list = document.getElementById("lista-historico"); list.innerHTML = "";
+            historico.forEach(h => list.innerHTML += `<div>Data: ${h.data} - Total: R$ ${h.total.toFixed(2)}</div>`);
+        }
+
+        function salvarProduto() {
+            let cod = document.getElementById("cad-codigo").value;
+            produtos[cod] = { nome: document.getElementById("cad-nome").value, preco: parseFloat(document.getElementById("cad-preco").value) };
+            localStorage.setItem("meusProdutos", JSON.stringify(produtos));
+            alert("Produto Salvo!");
+        }
+
         function passoSair() {
-            etapa++;
-            let b = document.getElementById('btn-sair');
-            if(etapa === 1) {
-                b.innerText = "⚠️ Tem certeza?";
-                b.style.background = "#ff9800";
-            } else if(etapa >= 2) {
-                window.location.href = "https://google.com";
-            }
+            let btn = document.getElementById("btn-sair-main");
+            if(btn.innerText === "🚪 Sair da Conta") { btn.innerText = "Tem certeza?"; }
+            else { window.location.href = "https://google.com"; }
         }
 
-        // Função para bipar manual
-        function biparManual() {
-            let codigo = document.getElementById('cod').value;
-            if(codigo) {
-                alert("Lançando produto: " + codigo);
-                document.getElementById('cod').value = "";
-            }
-        }
-
-        // Inicialização da Câmera com Tratamento de Erro (Não trava o site)
-        window.onload = function() {
-            try {
-                const scanner = new Html5Qrcode("camera-scanner");
-                scanner.start(
-                    { facingMode: "environment" }, 
-                    { fps: 10, qrbox: 200 }, 
-                    (c) => { console.log("Código lido: " + c); }
-                ).catch(err => {
-                    console.log("Câmera bloqueada ou indisponível: " + err);
-                });
-            } catch(e) {
-                console.log("Erro ao inicializar scanner.");
-            }
-        };
+        window.onload = () => { renderizarHistorico(); iniciarCamera(); };
     </script>
 </body>
 </html>
-
