@@ -35,11 +35,22 @@
         button.btn-acao:active { background: #0d47a1; }
         button.btn-limpar { background: #d32f2f; margin-top: 15px; }
 
-        /* Estilos do Caixa */
-        #camera-scanner { width: 100%; height: 250px; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
-        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; }
+        /* Seleção de Modos (Câmera vs Físico) */
+        .seletor-modo { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-modo { flex: 1; padding: 10px; border: 2px solid #ccc; background: white; border-radius: 6px; font-weight: bold; cursor: pointer; color: #555; }
+        .btn-modo.ativo { border-color: var(--azul-atacadao); background: var(--azul-atacadao); color: white; }
+
+        /* Estilos dos Modos de Entrada */
+        .modo-leitura { display: none; }
+        .modo-leitura.ativo { display: block; }
+        #camera-scanner { width: 100%; height: 250px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 10px; }
         
-        /* Tabelas e Listas */
+        /* Campo do Leitor Físico Altamente Visível */
+        .campo-leitor-fisico { background: #e8f5e9; border: 2px dashed #2e7d32 !important; text-align: center; font-weight: bold; color: #2e7d32; }
+        .campo-leitor-fisico::placeholder { color: #81c784; font-weight: normal; }
+
+        /* Tabelas e Caixas de Total */
+        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f0f0f0; }
@@ -54,11 +65,27 @@
 
     <!-- ABA 1: CAIXA -->
     <div id="tela-caixa" class="tela ativa">
+        
+        <!-- SELETOR DE FUNÇÃO (CÂMERA OU FÍSICO) -->
         <div class="card">
-            <h2>📷 Scanner de Código</h2>
-            <div id="camera-scanner"></div>
-            <input type="text" id="codigo-manual" placeholder="Código de barras manual...">
-            <button class="btn-acao" onclick="biparManual()">Lançar Produto</button>
+            <h2>🔌 Escolha a Origem do Bip</h2>
+            <div class="seletor-modo">
+                <button id="btn-modo-camera" class="btn-modo ativo" onclick="mudarModoLeitor('camera')">📷 Câmera do Celular</button>
+                <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Leitor Físico (USB/BT)</button>
+            </div>
+
+            <!-- SUB-TELA: MODO CÂMERA -->
+            <div id="entrada-camera" class="modo-leitura ativo">
+                <div id="camera-scanner"></div>
+                <input type="text" id="codigo-manual" placeholder="Código de barras manual se falhar...">
+                <button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button>
+            </div>
+
+            <!-- SUB-TELA: MODO LEITOR FÍSICO -->
+            <div id="entrada-fisico" class="modo-leitura">
+                <p style="font-size: 13px; color: #666; margin-bottom: 5px; text-align: center;">⚠️ Mantenha o foco neste campo verde e comece a bipar!</p>
+                <input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off">
+            </div>
         </div>
 
         <div class="card">
@@ -118,7 +145,7 @@
         </div>
     </div>
 
-    <!-- NAVEGAÇÃO POR ABAS -->
+    <!-- NAVEGAÇÃO POR ABAS PRINCIPAIS -->
     <nav>
         <button id="btn-caixa" class="ativo" onclick="mudarAba('caixa')">🛒 Caixa</button>
         <button id="btn-cadastro" onclick="mudarAba('cadastro')">📦 Cadastrar</button>
@@ -127,13 +154,56 @@
 
     <!-- LÓGICA DO SISTEMA -->
     <script>
-        // Carrega dados salvos na memória do celular ou inicia vazio
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
         let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
         let carrinho = [];
         let html5QrcodeScanner;
+        let modoAtualLeitor = 'camera'; // Pode ser 'camera' ou 'fisico'
 
-        // --- SISTEMA DE ABAS ---
+        // --- CONTROLE DE MUDANÇA DE MODO (CÂMERA VS FÍSICO) ---
+        function mudarModoLeitor(modo) {
+            modoAtualLeitor = modo;
+            
+            document.querySelectorAll('.btn-modo').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('.modo-leitura').forEach(m => m.classList.remove('ativo'));
+
+            document.getElementById(`btn-modo-${modo}`).classList.add('ativo');
+            document.getElementById(`entrada-${modo}`).classList.add('ativo');
+
+            if (modo === 'camera') {
+                iniciarCamera();
+            } else {
+                pararCamera();
+                focarLeitorFisico();
+            }
+        }
+
+        function focarLeitorFisico() {
+            if (modoAtualLeitor === 'fisico') {
+                const inputFisico = document.getElementById("codigo-leitor-fisico");
+                if (inputFisico) inputFisico.focus();
+            }
+        }
+
+        // Força o foco de volta no campo do leitor físico se o usuário clicar fora sem querer
+        document.addEventListener("click", () => {
+            if (document.getElementById('tela-caixa').classList.contains('ativa')) {
+                focarLeitorFisico();
+            }
+        });
+
+        // Escuta o comando "Enter" enviado automaticamente pelo Leitor Físico
+        document.getElementById("codigo-leitor-fisico").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                if (this.value.trim() !== "") {
+                    biparProduto(this.value.trim());
+                    this.value = ""; // Limpa para o próximo bip
+                }
+            }
+        });
+
+        // --- SISTEMA DE ABAS PRINCIPAIS ---
         function mudarAba(aba) {
             document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('ativo'));
@@ -141,17 +211,20 @@
             document.getElementById(`tela-${aba}`).classList.add('ativa');
             document.getElementById(`btn-${aba}`).classList.add('ativo');
 
-            // Inicia a câmera apenas se estiver no caixa
-            if (aba === 'caixa') {
+            if (aba === 'caixa' && modoAtualLeitor === 'camera') {
                 iniciarCamera();
             } else {
                 pararCamera();
+            }
+
+            if (aba === 'caixa' && modoAtualLeitor === 'fisico') {
+                setTimeout(focarLeitorFisico, 100);
             }
         }
 
         // --- CONTROLE DA CÂMERA ---
         function iniciarCamera() {
-            if (!html5QrcodeScanner) {
+            if (!html5QrcodeScanner && modoAtualLeitor === 'camera') {
                 html5QrcodeScanner = new Html5Qrcode("camera-scanner");
                 html5QrcodeScanner.start(
                     { facingMode: "environment" },
@@ -159,10 +232,8 @@
                     (codigoLido) => {
                         biparProduto(codigoLido);
                     },
-                    (erro) => { /* Silencia erros normais de busca de foco */ }
-                ).catch(err => {
-                    console.log("Erro ao abrir câmera: ", err);
-                });
+                    (erro) => { /* Oculta logs de foco da câmera */ }
+                ).catch(err => console.log("Erro câmera: ", err));
             }
         }
 
@@ -184,10 +255,11 @@
             } else {
                 alert(`Produto código ${codigo} não cadastrado!`);
             }
+            focarLeitorFisico();
         }
 
-        function biparManual() {
-            let campo = document.getElementById("codigo-manual");
+        function biparManual(idInput) {
+            let campo = document.getElementById(idInput);
             if (campo.value) {
                 biparProduto(campo.value);
                 campo.value = "";
@@ -207,7 +279,7 @@
             document.getElementById("valor-total").innerText = total.toFixed(2);
         }
 
-        // --- NOVO: SALVAR HISTÓRICO DE COMPRAS ---
+        // --- FINALIZAR E HISTÓRICO ---
         function finalizarCompra() {
             if (carrinho.length === 0) {
                 alert("O carrinho está vazio!");
@@ -217,23 +289,21 @@
             let totalCompra = carrinho.reduce((sum, item) => sum + item.preco, 0);
             let dataAtual = new Date().toLocaleString("pt-BR");
 
-            // Cria o registro da venda
             let novaVenda = {
                 data: dataAtual,
                 itens: carrinho.map(i => i.nome).join(", "),
                 total: totalCompra
             };
 
-            // Adiciona no início do histórico e salva no celular
             historico.unshift(novaVenda);
             localStorage.setItem("historicoCompras", JSON.stringify(historico));
 
-            // Limpa o carrinho
             carrinho = [];
             renderizarCarrinho();
             renderizarHistorico();
 
-            alert("Venda finalizada com sucesso e salva no Histórico!");
+            alert("Venda registrada com sucesso!");
+            focarLeitorFisico();
         }
 
         function renderizarHistorico() {
@@ -287,9 +357,8 @@
             }
         }
 
-        // --- FUNÇÕES DE LIMPEZA DO CELULAR ---
         function limparEstoque() {
-            if(confirm("Deseja APAGAR TODOS os produtos do estoque?")) {
+            if(confirm("Deseja APAGAR TODO o estoque?")) {
                 localStorage.removeItem("meusProdutos");
                 produtos = {};
                 renderizarEstoque();
@@ -308,7 +377,6 @@
             if (navigator.vibrate) navigator.vibrate(100);
         }
 
-        // Inicializa as renderizações visuais ao abrir a página
         window.onload = () => {
             renderizarEstoque();
             renderizarHistorico();
