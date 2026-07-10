@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema PDV - Configurável</title>
+    <title>Sistema PDV - Totalmente Configurável</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
-            --azul-atacadao: #1565c0;
-            --laranja-atacadao: #ff6d00;
+            /* A cor inicial padrão é o azul, mas agora ela é controlada pelo JavaScript */
+            --azul-atacadao: #1565c0; 
             --cinza-fundo: #f5f5f5;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 80px; }
         
-        header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s; }
         
         nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
         nav button { background: none; border: none; padding: 12px; font-size: 14px; font-weight: bold; color: #777; flex: 1; text-align: center; cursor: pointer; transition: 0.2s; }
@@ -24,11 +24,15 @@
         .tela.ativa { display: block; }
 
         .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        h2 { margin-bottom: 15px; font-size: 18px; color: var(--azul-atacadao); border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        h2 { margin-bottom: 15px; font-size: 18px; color: var(--azul-atacadao); border-bottom: 2px solid #eee; padding-bottom: 5px; transition: color 0.3s; }
         input, button.btn-acao { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        button.btn-acao { background: var(--azul-atacadao); color: white; font-weight: bold; border: none; cursor: pointer; }
-        button.btn-acao:active { background: #0d47a1; }
+        button.btn-acao { background: var(--azul-atacadao); color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; }
+        button.btn-acao:active { filter: brightness(0.8); }
         button.btn-limpar { background: #d32f2f; margin-top: 15px; }
+
+        /* Estilização do campo de upload de arquivo e cor */
+        input[type="file"] { background: #fff; padding: 10px; cursor: pointer; }
+        input[type="color"] { height: 50px; padding: 2px; cursor: pointer; border: 1px solid #ccc; background: none; }
 
         .seletor-modo { display: flex; gap: 10px; margin-bottom: 15px; }
         .btn-modo { flex: 1; padding: 10px; border: 2px solid #ccc; background: white; border-radius: 6px; font-weight: bold; cursor: pointer; color: #555; }
@@ -40,20 +44,30 @@
         
         .campo-leitor-fisico { background: #e8f5e9; border: 2px dashed #2e7d32 !important; text-align: center; font-weight: bold; color: #2e7d32; }
         
-        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; }
+        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; transition: color 0.3s; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f0f0f0; }
 
-        .rodape-creditos { text-align: center; font-size: 13px; color: #666; padding: 15px 10px; margin-top: 25px; border-top: 1px solid #e0e0e0; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .rodape-creditos strong { color: var(--azul-atacadao); }
+        /* 🖼️ Imagem maior e mais visível para tirar o vazio da tela */
+        .logo-loja-fundo {
+            display: block;
+            max-width: 85%; /* Aumentado para preencher melhor a largura */
+            max-height: 220px; /* Aumentado a altura limite */
+            margin: 30px auto 10px auto;
+            border-radius: 12px;
+            opacity: 0.75; /* Um pouco mais nítida */
+            object-fit: contain;
+        }
+
+        .rodape-creditos { text-align: center; font-size: 13px; color: #666; padding: 15px 10px; margin-top: 15px; border-top: 1px solid #e0e0e0; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .rodape-creditos strong { color: var(--azul-atacadao); transition: color 0.3s; }
     </style>
 </head>
 <body>
 
     <header id="nome-loja-topo">Mercado</header>
 
-    <!-- ABA 1: CAIXA -->
     <div id="tela-caixa" class="tela ativa">
         <div class="card">
             <h2>🔌 Escolha a Origem do Bip</h2>
@@ -70,15 +84,24 @@
             <div class="total-box">Total: R$ <span id="valor-total">0.00</span></div>
             <button class="btn-acao" style="background: #2e7d32; margin-top: 15px;" onclick="finalizarCompra()">🔒 Finalizar Emissão</button>
         </div>
+        
+        <img id="logo-loja-caixa" class="logo-loja-fundo" src="" alt="Logo">
         <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
-    <!-- ABA 2: CADASTRO -->
     <div id="tela-cadastro" class="tela">
         <div class="card">
             <h2>⚙️ Configurações do Sistema</h2>
-            <input type="text" id="config-nome-loja" placeholder="Nome do Mercado">
-            <button class="btn-acao" style="background: #4caf50;" onclick="salvarConfig()">Salvar Nome do Mercado</button>
+            <label style="font-size: 14px; font-weight: bold; color: #555;">Nome do Mercado:</label>
+            <input type="text" id="config-nome-loja" placeholder="Ex: Mercado Jaconias">
+            
+            <label style="font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 12px;">Cor Principal do Sistema:</label>
+            <input type="color" id="config-cor-loja">
+
+            <label style="font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 12px;">Foto/Logo do Mercado (Direto da Galeria):</label>
+            <input type="file" id="config-logo-loja" accept="image/*">
+            
+            <button class="btn-acao" style="background: #4caf50; margin-top: 18px;" onclick="salvarConfig()">Salvar Configurações</button>
         </div>
         <div class="card">
             <h2>➕ Cadastrar Produto</h2>
@@ -87,14 +110,22 @@
             <input type="number" step="0.01" id="cad-preco" placeholder="Preço (Ex: 5.99)">
             <button class="btn-acao" onclick="salvarProduto()">Salvar no Sistema</button>
         </div>
+        <div class="card">
+            <h2>📦 Estoque Cadastrado</h2>
+            <table><thead><tr><th>Código</th><th>Produto</th><th>Preço</th></tr></thead><tbody id="lista-estoque"></tbody></table>
+            <button class="btn-acao btn-limpar" onclick="limparEstoque()">Apagar Todo o Estoque</button>
+        </div>
+
+        <img id="logo-loja-cadastro" class="logo-loja-fundo" src="" alt="Logo">
         <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
-    <!-- ABA 3: HISTÓRICO -->
     <div id="tela-historico" class="tela">
         <div class="card"><h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2></div>
         <div class="card" id="lista-historico"></div>
         <button class="btn-acao btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
+        
+        <img id="logo-loja-historico" class="logo-loja-fundo" src="" alt="Logo">
         <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
@@ -105,19 +136,51 @@
     </nav>
 
     <script>
-        // Configurações Iniciais
+        // Carrega configurações de texto, imagem e COR do localStorage
         let nomeLoja = localStorage.getItem("nomeLoja") || "Mercado";
+        let logoLoja = localStorage.getItem("logoLoja") || "https://cdn-icons-png.flaticon.com/512/3081/3081840.png";
+        let corLoja = localStorage.getItem("corLoja") || "#1565c0"; // Azul padrão inicial
+
+        // Aplica a cor salva nas variáveis do CSS
+        document.documentElement.style.setProperty('--azul-atacadao', corLoja);
+
+        // Preenche os campos com os valores atuais nas configurações
         document.getElementById("nome-loja-topo").innerText = nomeLoja;
         document.getElementById("config-nome-loja").value = nomeLoja;
+        document.getElementById("config-cor-loja").value = corLoja;
 
-        function salvarConfig() {
-            let novoNome = document.getElementById("config-nome-loja").value;
-            localStorage.setItem("nomeLoja", novoNome);
-            alert("Nome salvo! O sistema será reiniciado para aplicar.");
-            location.reload();
+        function carregarLogos() {
+            document.getElementById("logo-loja-caixa").src = logoLoja;
+            document.getElementById("logo-loja-cadastro").src = logoLoja;
+            document.getElementById("logo-loja-historico").src = logoLoja;
         }
 
-        // Resto da lógica...
+        // Salva as configurações de nome, cor e processa o arquivo de foto
+        function salvarConfig() {
+            let novoNome = document.getElementById("config-nome-loja").value;
+            let novaCor = document.getElementById("config-cor-loja").value;
+            
+            localStorage.setItem("nomeLoja", novoNome);
+            localStorage.setItem("corLoja", novaCor);
+            
+            let fileInput = document.getElementById("config-logo-loja");
+            
+            // Verifica se o usuário alterou a foto
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem("logoLoja", e.target.result);
+                    alert("Todas as configurações e imagem foram salvas!");
+                    location.reload();
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                alert("Configurações e cores atualizadas!");
+                location.reload();
+            }
+        }
+
+        // Lógica interna padrão do PDV
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
         let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
         let carrinho = [];
@@ -133,8 +196,12 @@
             if (modo === 'camera') iniciarCamera(); else { pararCamera(); focarLeitorFisico(); }
         }
 
-        function focarLeitorFisico() { if (modoAtualLeitor === 'fisico') document.getElementById("codigo-leitor-fisico").focus(); }
-        document.addEventListener("click", () => { if (document.getElementById('tela-caixa').classList.contains('ativa')) focarLeitorFisico(); });
+        function focarLeitorFisico() { 
+            if (modoAtualLeitor === 'fisico' && document.getElementById('tela-caixa').classList.contains('ativa')) {
+                document.getElementById("codigo-leitor-fisico").focus(); 
+            }
+        }
+        document.addEventListener("click", () => { focarLeitorFisico(); });
 
         document.getElementById("codigo-leitor-fisico").addEventListener("keydown", function(event) {
             if (event.key === "Enter") { event.preventDefault(); if (this.value.trim() !== "") { biparProduto(this.value.trim()); this.value = ""; } }
@@ -146,6 +213,7 @@
             document.getElementById(`tela-${aba}`).classList.add('ativa');
             document.getElementById(`btn-${aba}`).classList.add('ativo');
             if (aba === 'caixa' && modoAtualLeitor === 'camera') iniciarCamera(); else pararCamera();
+            if (aba === 'caixa' && modoAtualLeitor === 'fisico') setTimeout(focarLeitorFisico, 100);
         }
 
         function iniciarCamera() {
@@ -159,9 +227,17 @@
 
         function biparProduto(codigo) {
             let produto = produtos[codigo];
-            if (produto) { carrinho.push({ nome: produto.nome, preco: produto.preco }); renderizarCarrinho(); if(navigator.vibrate) navigator.vibrate(100); } 
-            else alert(`Produto ${codigo} não cadastrado!`);
-            focarLeitorFisico();
+            if (produto) { 
+                carrinho.push({ nome: produto.nome, preco: produto.preco }); 
+                renderizarCarrinho(); 
+                if(navigator.vibrate) navigator.vibrate(100); 
+                focarLeitorFisico();
+            } else {
+                alert(`Produto com código ${codigo} não encontrado! Redirecionando para cadastro...`);
+                document.getElementById("cad-codigo").value = codigo;
+                mudarAba('cadastro');
+                setTimeout(() => { document.getElementById("cad-nome").focus(); }, 250);
+            }
         }
 
         function biparManual(id) { let c = document.getElementById(id); if (c.value) { biparProduto(c.value); c.value = ""; } }
@@ -178,6 +254,7 @@
             historico.unshift({ data: new Date().toLocaleString(), itens: carrinho.map(i => i.nome).join(", "), total: total });
             localStorage.setItem("historicoCompras", JSON.stringify(historico));
             carrinho = []; renderizarCarrinho(); renderizarHistorico(); alert("Venda registrada!");
+            focarLeitorFisico();
         }
 
         function renderizarHistorico() {
@@ -192,7 +269,13 @@
             let preco = parseFloat(document.getElementById("cad-preco").value);
             if (!cod || !nome || isNaN(preco)) return alert("Preencha tudo!");
             produtos[cod] = { nome, preco }; localStorage.setItem("meusProdutos", JSON.stringify(produtos));
-            renderizarEstoque(); alert("Produto salvo!");
+            renderizarEstoque(); 
+            alert("Produto salvo!");
+            
+            document.getElementById("cad-codigo").value = "";
+            document.getElementById("cad-nome").value = "";
+            document.getElementById("cad-preco").value = "";
+            mudarAba('caixa');
         }
 
         function renderizarEstoque() {
@@ -203,7 +286,7 @@
         function limparEstoque() { if(confirm("Apagar estoque?")) { localStorage.removeItem("meusProdutos"); produtos = {}; renderizarEstoque(); } }
         function limparHistorico() { if(confirm("Apagar histórico?")) { localStorage.removeItem("historicoCompras"); historico = []; renderizarHistorico(); } }
 
-        window.onload = () => { renderizarEstoque(); renderizarHistorico(); iniciarCamera(); };
+        window.onload = () => { carregarLogos(); renderizarEstoque(); renderizarHistorico(); iniciarCamera(); };
     </script>
 </body>
 </html>
