@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atacadão PDV - Sistema Completo</title>
+    <title>Sistema PDV - Configurável</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -14,19 +14,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 80px; }
         
-        /* Cabeçalho */
         header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
-        /* Menu de Abas Inferior (Estilo App) */
         nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
         nav button { background: none; border: none; padding: 12px; font-size: 14px; font-weight: bold; color: #777; flex: 1; text-align: center; cursor: pointer; transition: 0.2s; }
         nav button.ativo { color: var(--azul-atacadao); border-top: 3px solid var(--azul-atacadao); background: #f0f4c333; }
 
-        /* Container de Telas */
         .tela { padding: 15px; display: none; max-width: 600px; margin: 0 auto; }
         .tela.ativa { display: block; }
 
-        /* Cards e Estilos Gerais */
         .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 15px; }
         h2 { margin-bottom: 15px; font-size: 18px; color: var(--azul-atacadao); border-bottom: 2px solid #eee; padding-bottom: 5px; }
         input, button.btn-acao { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
@@ -34,134 +30,72 @@
         button.btn-acao:active { background: #0d47a1; }
         button.btn-limpar { background: #d32f2f; margin-top: 15px; }
 
-        /* Seleção de Modos (Câmera vs Físico) */
         .seletor-modo { display: flex; gap: 10px; margin-bottom: 15px; }
         .btn-modo { flex: 1; padding: 10px; border: 2px solid #ccc; background: white; border-radius: 6px; font-weight: bold; cursor: pointer; color: #555; }
         .btn-modo.ativo { border-color: var(--azul-atacadao); background: var(--azul-atacadao); color: white; }
 
-        /* Estilos dos Modos de Entrada */
         .modo-leitura { display: none; }
         .modo-leitura.ativo { display: block; }
         #camera-scanner { width: 100%; height: 250px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 10px; }
         
-        /* Campo do Leitor Físico Altamente Visível */
         .campo-leitor-fisico { background: #e8f5e9; border: 2px dashed #2e7d32 !important; text-align: center; font-weight: bold; color: #2e7d32; }
-        .campo-leitor-fisico::placeholder { color: #81c784; font-weight: normal; }
-
-        /* Tabelas e Caixas de Total */
+        
         .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f0f0f0; }
 
-        /* Lista de Histórico */
-        .item-historico { padding: 12px; border-left: 4px solid var(--laranja-atacadao); background: #fff3e0; margin-bottom: 10px; border-radius: 0 6px 6px 0; font-size: 14px; }
-
-        /* Seção de Créditos Exclusiva */
-        .rodape-creditos {
-            text-align: center;
-            font-size: 13px;
-            color: #666;
-            padding: 15px 10px;
-            margin-top: 25px;
-            border-top: 1px solid #e0e0e0;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        .rodape-creditos { text-align: center; font-size: 13px; color: #666; padding: 15px 10px; margin-top: 25px; border-top: 1px solid #e0e0e0; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .rodape-creditos strong { color: var(--azul-atacadao); }
-        .rodape-creditos span { display: block; font-size: 11px; color: #999; margin-top: 4px; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <header>🛒 Atacadão PDV Móvel</header>
+    <header id="nome-loja-topo">Mercado</header>
 
+    <!-- ABA 1: CAIXA -->
     <div id="tela-caixa" class="tela ativa">
         <div class="card">
             <h2>🔌 Escolha a Origem do Bip</h2>
             <div class="seletor-modo">
-                <button id="btn-modo-camera" class="btn-modo ativo" onclick="mudarModoLeitor('camera')">📷 Câmera do Celular</button>
-                <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Leitor Físico (USB/BT)</button>
+                <button id="btn-modo-camera" class="btn-modo ativo" onclick="mudarModoLeitor('camera')">📷 Câmera</button>
+                <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Leitor Físico</button>
             </div>
-
-            <div id="entrada-camera" class="modo-leitura ativo">
-                <div id="camera-scanner"></div>
-                <input type="text" id="codigo-manual" placeholder="Código de barras manual se falhar...">
-                <button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button>
-            </div>
-
-            <div id="entrada-fisico" class="modo-leitura">
-                <p style="font-size: 13px; color: #666; margin-bottom: 5px; text-align: center;">⚠️ Mantenha o foco neste campo verde e comece a bipar!</p>
-                <input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off">
-            </div>
+            <div id="entrada-camera" class="modo-leitura ativo"><div id="camera-scanner"></div><input type="text" id="codigo-manual" placeholder="Manual..."><button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button></div>
+            <div id="entrada-fisico" class="modo-leitura"><input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off"></div>
         </div>
-
         <div class="card">
             <h2>🛒 Cupom Fiscal Atual</h2>
-            <table>
-                <thead>
-                    <tr><th>Item</th><th>Qtd</th><th>Preço</th></tr>
-                </thead>
-                <tbody id="lista-carrinho">
-                    </tbody>
-            </table>
+            <table><thead><tr><th>Item</th><th>Qtd</th><th>Preço</th></tr></thead><tbody id="lista-carrinho"></tbody></table>
             <div class="total-box">Total: R$ <span id="valor-total">0.00</span></div>
-            <button class="btn-acao" style="background: #2e7d32; margin-top: 15px;" onclick="finalizarCompra()">🔒 Finalizar Compra</button>
+            <button class="btn-acao" style="background: #2e7d32; margin-top: 15px;" onclick="finalizarCompra()">🔒 Finalizar Emissão</button>
         </div>
-
-        <div class="rodape-creditos">
-            Criado por <strong>Victor Caldeira de Moura</strong>
-            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
-        </div>
+        <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
+    <!-- ABA 2: CADASTRO -->
     <div id="tela-cadastro" class="tela">
         <div class="card">
-            <h2>➕ Cadastrar Novo Produto</h2>
+            <h2>⚙️ Configurações do Sistema</h2>
+            <input type="text" id="config-nome-loja" placeholder="Nome do Mercado">
+            <button class="btn-acao" style="background: #4caf50;" onclick="salvarConfig()">Salvar Nome do Mercado</button>
+        </div>
+        <div class="card">
+            <h2>➕ Cadastrar Produto</h2>
             <input type="text" id="cad-codigo" placeholder="Código de Barras">
             <input type="text" id="cad-nome" placeholder="Nome do Produto">
             <input type="number" step="0.01" id="cad-preco" placeholder="Preço (Ex: 5.99)">
             <button class="btn-acao" onclick="salvarProduto()">Salvar no Sistema</button>
         </div>
-
-        <div class="card">
-            <h2>📦 Estoque Cadastrado</h2>
-            <table>
-                <thead>
-                    <tr><th>Código</th><th>Produto</th><th>Preço</th></tr>
-                </thead>
-                <tbody id="lista-estoque">
-                    </tbody>
-            </table>
-            <button class="btn-acao btn-limpar" onclick="limparEstoque()">Apagar Todo o Estoque</button>
-        </div>
-
-        <div class="rodape-creditos">
-            Criado por <strong>Victor Caldeira de Moura</strong>
-            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
-        </div>
+        <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
+    <!-- ABA 3: HISTÓRICO -->
     <div id="tela-historico" class="tela">
-        <div class="card">
-            <h2>📊 Faturamento Acumulado</h2>
-            <div class="total-box" style="background: #fff3e0; color: var(--laranja-atacadao);">
-                Total Vendido: R$ <span id="faturamento-total">0.00</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>📜 Últimas Compras Passadas</h2>
-            <div id="lista-historico">
-                </div>
-            <button class="btn-acao btn-limpar" onclick="limparHistorico()">Limpar Histórico de Vendas</button>
-        </div>
-
-        <div class="rodape-creditos">
-            Criado por <strong>Victor Caldeira de Moura</strong>
-            <span>(Criado com muito esforço por Victor Caldeira de Moura)</span>
-        </div>
+        <div class="card"><h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2></div>
+        <div class="card" id="lista-historico"></div>
+        <button class="btn-acao btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
+        <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
     <nav>
@@ -171,243 +105,105 @@
     </nav>
 
     <script>
+        // Configurações Iniciais
+        let nomeLoja = localStorage.getItem("nomeLoja") || "Mercado";
+        document.getElementById("nome-loja-topo").innerText = nomeLoja;
+        document.getElementById("config-nome-loja").value = nomeLoja;
+
+        function salvarConfig() {
+            let novoNome = document.getElementById("config-nome-loja").value;
+            localStorage.setItem("nomeLoja", novoNome);
+            alert("Nome salvo! O sistema será reiniciado para aplicar.");
+            location.reload();
+        }
+
+        // Resto da lógica...
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
         let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
         let carrinho = [];
         let html5QrcodeScanner;
         let modoAtualLeitor = 'camera';
 
-        // --- CONTROLE DE MUDANÇA DE MODO (CÂMERA VS FÍSICO) ---
         function mudarModoLeitor(modo) {
             modoAtualLeitor = modo;
-            
             document.querySelectorAll('.btn-modo').forEach(b => b.classList.remove('ativo'));
             document.querySelectorAll('.modo-leitura').forEach(m => m.classList.remove('ativo'));
-
             document.getElementById(`btn-modo-${modo}`).classList.add('ativo');
             document.getElementById(`entrada-${modo}`).classList.add('ativo');
-
-            if (modo === 'camera') {
-                iniciarCamera();
-            } else {
-                pararCamera();
-                focarLeitorFisico();
-            }
+            if (modo === 'camera') iniciarCamera(); else { pararCamera(); focarLeitorFisico(); }
         }
 
-        function focarLeitorFisico() {
-            if (modoAtualLeitor === 'fisico') {
-                const inputFisico = document.getElementById("codigo-leitor-fisico");
-                if (inputFisico) inputFisico.focus();
-            }
-        }
-
-        document.addEventListener("click", () => {
-            if (document.getElementById('tela-caixa').classList.contains('ativa')) {
-                focarLeitorFisico();
-            }
-        });
+        function focarLeitorFisico() { if (modoAtualLeitor === 'fisico') document.getElementById("codigo-leitor-fisico").focus(); }
+        document.addEventListener("click", () => { if (document.getElementById('tela-caixa').classList.contains('ativa')) focarLeitorFisico(); });
 
         document.getElementById("codigo-leitor-fisico").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                if (this.value.trim() !== "") {
-                    biparProduto(this.value.trim());
-                    this.value = "";
-                }
-            }
+            if (event.key === "Enter") { event.preventDefault(); if (this.value.trim() !== "") { biparProduto(this.value.trim()); this.value = ""; } }
         });
 
-        // --- SISTEMA DE ABAS PRINCIPAIS ---
         function mudarAba(aba) {
             document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('ativo'));
-            
             document.getElementById(`tela-${aba}`).classList.add('ativa');
             document.getElementById(`btn-${aba}`).classList.add('ativo');
-
-            if (aba === 'caixa' && modoAtualLeitor === 'camera') {
-                iniciarCamera();
-            } else {
-                pararCamera();
-            }
-
-            if (aba === 'caixa' && modoAtualLeitor === 'fisico') {
-                setTimeout(focarLeitorFisico, 100);
-            }
+            if (aba === 'caixa' && modoAtualLeitor === 'camera') iniciarCamera(); else pararCamera();
         }
 
-        // --- CONTROLE DA CÂMERA ---
         function iniciarCamera() {
             if (!html5QrcodeScanner && modoAtualLeitor === 'camera') {
                 html5QrcodeScanner = new Html5Qrcode("camera-scanner");
-                html5QrcodeScanner.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 150 } },
-                    (codigoLido) => {
-                        biparProduto(codigoLido);
-                    },
-                    (erro) => {}
-                ).catch(err => console.log("Erro câmera: ", err));
+                html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (c) => biparProduto(c)).catch(() => {});
             }
         }
 
-        /* * FUNÇÃO EXCLUSIVA DE CRÉDITOS
-         * Criado com muito esforço por Victor Caldeira de Moura
-         */
-        function exibirCreditosDesenvolvedor() {
-            console.log("========================================");
-            console.log("SISTEMA DESENVOLVIDO POR VICTOR CALDEIRA DE MOURA");
-            console.log("Criado com muito esforço por Victor Caldeira de Moura");
-            console.log("========================================");
-        }
+        function pararCamera() { if (html5QrcodeScanner) html5QrcodeScanner.stop().then(() => html5QrcodeScanner = null).catch(() => {}); }
 
-        function pararCamera() {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.stop().then(() => {
-                    html5QrcodeScanner = null;
-                }).catch(err => console.log(err));
-            }
-        }
-
-        // --- LÓGICA DO CAIXA ---
         function biparProduto(codigo) {
             let produto = produtos[codigo];
-            if (produto) {
-                carrinho.push({ nome: produto.nome, preco: produto.preco });
-                renderizarCarrinho();
-                vibrarCelular();
-            } else {
-                alert(`Produto código ${codigo} não cadastrado!`);
-            }
+            if (produto) { carrinho.push({ nome: produto.nome, preco: produto.preco }); renderizarCarrinho(); if(navigator.vibrate) navigator.vibrate(100); } 
+            else alert(`Produto ${codigo} não cadastrado!`);
             focarLeitorFisico();
         }
 
-        function biparManual(idInput) {
-            let campo = document.getElementById(idInput);
-            if (campo.value) {
-                biparProduto(campo.value);
-                campo.value = "";
-            }
-        }
+        function biparManual(id) { let c = document.getElementById(id); if (c.value) { biparProduto(c.value); c.value = ""; } }
 
         function renderizarCarrinho() {
-            let tbody = document.getElementById("lista-carrinho");
-            tbody.innerHTML = "";
-            let total = 0;
-
-            carrinho.forEach(item => {
-                total += item.preco;
-                tbody.innerHTML += `<tr><td>${item.nome}</td><td>1</td><td>R$ ${item.preco.toFixed(2)}</td></tr>`;
-            });
-
+            let tbody = document.getElementById("lista-carrinho"); tbody.innerHTML = ""; let total = 0;
+            carrinho.forEach(i => { total += i.preco; tbody.innerHTML += `<tr><td>${i.nome}</td><td>1</td><td>R$ ${i.preco.toFixed(2)}</td></tr>`; });
             document.getElementById("valor-total").innerText = total.toFixed(2);
         }
 
-        // --- FINALIZAR E HISTÓRICO ---
         function finalizarCompra() {
-            if (carrinho.length === 0) {
-                alert("O carrinho está vazio!");
-                return;
-            }
-
-            let totalCompra = carrinho.reduce((sum, item) => sum + item.preco, 0);
-            let dataAtual = new Date().toLocaleString("pt-BR");
-
-            let novaVenda = {
-                data: dataAtual,
-                itens: carrinho.map(i => i.nome).join(", "),
-                total: totalCompra
-            };
-
-            historico.unshift(novaVenda);
+            if (carrinho.length === 0) return;
+            let total = carrinho.reduce((s, i) => s + i.preco, 0);
+            historico.unshift({ data: new Date().toLocaleString(), itens: carrinho.map(i => i.nome).join(", "), total: total });
             localStorage.setItem("historicoCompras", JSON.stringify(historico));
-
-            carrinho = [];
-            renderizarCarrinho();
-            renderizarHistorico();
-
-            alert("Venda registrada com sucesso!");
-            focarLeitorFisico();
+            carrinho = []; renderizarCarrinho(); renderizarHistorico(); alert("Venda registrada!");
         }
 
         function renderizarHistorico() {
-            let container = document.getElementById("lista-historico");
-            let faturamentoSpan = document.getElementById("faturamento-total");
-            container.innerHTML = "";
-            let faturamentoTotal = 0;
-
-            historico.forEach(venda => {
-                faturamentoTotal += venda.total;
-                container.innerHTML += `
-                    <div class="item-historico">
-                        <strong>📅 ${venda.data}</strong><br>
-                        🛒 Itens: ${venda.itens}<br>
-                        💰 Total: <strong>R$ ${venda.total.toFixed(2)}</strong>
-                    </div>
-                `;
-            });
-
-            faturamentoSpan.innerText = faturamentoTotal.toFixed(2);
+            let container = document.getElementById("lista-historico"); let totalFat = 0; container.innerHTML = "";
+            historico.forEach(v => { totalFat += v.total; container.innerHTML += `<div class="item-historico">📅 ${v.data}<br>💰 R$ ${v.total.toFixed(2)}</div>`; });
+            document.getElementById("faturamento-total").innerText = totalFat.toFixed(2);
         }
 
-        // --- LÓGICA DE CADASTRO ---
         function salvarProduto() {
             let cod = document.getElementById("cad-codigo").value;
             let nome = document.getElementById("cad-nome").value;
             let preco = parseFloat(document.getElementById("cad-preco").value);
-
-            if (!cod || !nome || isNaN(preco)) {
-                alert("Preencha todos os campos do produto corretamente!");
-                return;
-            }
-
-            produtos[cod] = { nome: nome, preco: preco };
-            localStorage.setItem("meusProdutos", JSON.stringify(produtos));
-
-            document.getElementById("cad-codigo").value = "";
-            document.getElementById("cad-nome").value = "";
-            document.getElementById("cad-preco").value = "";
-
-            renderizarEstoque();
-            alert("Produto cadastrado com sucesso!");
+            if (!cod || !nome || isNaN(preco)) return alert("Preencha tudo!");
+            produtos[cod] = { nome, preco }; localStorage.setItem("meusProdutos", JSON.stringify(produtos));
+            renderizarEstoque(); alert("Produto salvo!");
         }
 
         function renderizarEstoque() {
-            let tbody = document.getElementById("lista-estoque");
-            tbody.innerHTML = "";
-
-            for (let cod in produtos) {
-                tbody.innerHTML += `<tr><td>${cod}</td><td>${produtos[cod].nome}</td><td>R$ ${produtos[cod].preco.toFixed(2)}</td></tr>`;
-            }
+            let tbody = document.getElementById("lista-estoque"); tbody.innerHTML = "";
+            for (let c in produtos) tbody.innerHTML += `<tr><td>${c}</td><td>${produtos[c].nome}</td><td>R$ ${produtos[c].preco.toFixed(2)}</td></tr>`;
         }
 
-        function limparEstoque() {
-            if(confirm("Deseja APAGAR TODO o estoque?")) {
-                localStorage.removeItem("meusProdutos");
-                produtos = {};
-                renderizarEstoque();
-            }
-        }
+        function limparEstoque() { if(confirm("Apagar estoque?")) { localStorage.removeItem("meusProdutos"); produtos = {}; renderizarEstoque(); } }
+        function limparHistorico() { if(confirm("Apagar histórico?")) { localStorage.removeItem("historicoCompras"); historico = []; renderizarHistorico(); } }
 
-        function limparHistorico() {
-            if(confirm("Deseja APAGAR TODO o histórico de vendas?")) {
-                localStorage.removeItem("historicoCompras");
-                historico = [];
-                renderizarHistorico();
-            }
-        }
-
-        function vibrarCelular() {
-            if (navigator.vibrate) navigator.vibrate(100);
-        }
-
-        window.onload = () => {
-            renderizarEstoque();
-            renderizarHistorico();
-            iniciarCamera();
-            exibirCreditosDesenvolvedor(); // Executa a função dedicada de créditos
-        };
+        window.onload = () => { renderizarEstoque(); renderizarHistorico(); iniciarCamera(); };
     </script>
 </body>
 </html>
