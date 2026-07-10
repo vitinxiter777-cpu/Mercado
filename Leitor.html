@@ -7,61 +7,230 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
-            /* A cor inicial padrão é o azul, mas agora ela é controlada pelo JavaScript */
             --azul-atacadao: #1565c0; 
             --cinza-fundo: #f5f5f5;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--cinza-fundo); color: #333; padding-bottom: 80px; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        body { 
+            background-color: var(--cinza-fundo); 
+            color: #333; 
+            padding-bottom: 80px; 
+            overflow-x: hidden; /* 🛡️ Proteção contra qualquer transbordamento/overflow horizontal */
+        }
         
-        header { background: var(--azul-atacadao); color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s; }
+        header { 
+            background: var(--azul-atacadao); 
+            color: white; 
+            text-align: center; 
+            padding: 15px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            transition: background 0.3s; 
+        }
         
-        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-        nav button { background: none; border: none; padding: 12px; font-size: 14px; font-weight: bold; color: #777; flex: 1; text-align: center; cursor: pointer; transition: 0.2s; }
-        nav button.ativo { color: var(--azul-atacadao); border-top: 3px solid var(--azul-atacadao); background: #f0f4c333; }
-
-        .tela { padding: 15px; display: none; max-width: 600px; margin: 0 auto; }
-        .tela.ativa { display: block; }
-
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        h2 { margin-bottom: 15px; font-size: 18px; color: var(--azul-atacadao); border-bottom: 2px solid #eee; padding-bottom: 5px; transition: color 0.3s; }
-        input, button.btn-acao { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        button.btn-acao { background: var(--azul-atacadao); color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; }
-        button.btn-acao:active { filter: brightness(0.8); }
-        button.btn-limpar { background: #d32f2f; margin-top: 15px; }
-
-        /* Estilização do campo de upload de arquivo e cor */
-        input[type="file"] { background: #fff; padding: 10px; cursor: pointer; }
-        input[type="color"] { height: 50px; padding: 2px; cursor: pointer; border: 1px solid #ccc; background: none; }
-
-        .seletor-modo { display: flex; gap: 10px; margin-bottom: 15px; }
-        .btn-modo { flex: 1; padding: 10px; border: 2px solid #ccc; background: white; border-radius: 6px; font-weight: bold; cursor: pointer; color: #555; }
-        .btn-modo.ativo { border-color: var(--azul-atacadao); background: var(--azul-atacadao); color: white; }
-
-        .modo-leitura { display: none; }
-        .modo-leitura.ativo { display: block; }
-        #camera-scanner { width: 100%; height: 250px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 10px; }
-        
-        .campo-leitor-fisico { background: #e8f5e9; border: 2px dashed #2e7d32 !important; text-align: center; font-weight: bold; color: #2e7d32; }
-        
-        .total-box { background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: right; font-size: 22px; font-weight: bold; color: var(--azul-atacadao); margin-top: 10px; transition: color 0.3s; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f0f0f0; }
-
-        /* 🖼️ Imagem maior e mais visível para tirar o vazio da tela */
-        .logo-loja-fundo {
-            display: block;
-            max-width: 85%; /* Aumentado para preencher melhor a largura */
-            max-height: 220px; /* Aumentado a altura limite */
-            margin: 30px auto 10px auto;
-            border-radius: 12px;
-            opacity: 0.75; /* Um pouco mais nítida */
-            object-fit: contain;
+        nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: white; 
+            display: flex; 
+            justify-content: space-around; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
+            z-index: 1000; 
+        }
+        nav button { 
+            background: none; 
+            border: none; 
+            padding: 12px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: #777; 
+            flex: 1; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        nav button.ativo { 
+            color: var(--azul-atacadao); 
+            border-top: 3px solid var(--azul-atacadao); 
+            background: rgba(21, 101, 192, 0.05); 
         }
 
-        .rodape-creditos { text-align: center; font-size: 13px; color: #666; padding: 15px 10px; margin-top: 15px; border-top: 1px solid #e0e0e0; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .rodape-creditos strong { color: var(--azul-atacadao); transition: color 0.3s; }
+        .tela { 
+            padding: 15px; 
+            display: none; 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+        .tela.ativa { 
+            display: block; 
+        }
+
+        .card { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); 
+            margin-bottom: 15px; 
+        }
+        h2 { 
+            margin-bottom: 15px; 
+            font-size: 18px; 
+            color: var(--azul-atacadao); 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 5px; 
+            transition: color 0.3s; 
+        }
+        input, button.btn-acao { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 8px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 16px; 
+        }
+        button.btn-acao { 
+            background: var(--azul-atacadao); 
+            color: white; 
+            font-weight: bold; 
+            border: none; 
+            cursor: pointer; 
+            transition: background 0.3s; 
+        }
+        button.btn-acao:active { 
+            filter: brightness(0.8); 
+        }
+        button.btn-limpar { 
+            background: #d32f2f; 
+            margin-top: 15px; 
+        }
+
+        input[type="file"] { 
+            background: #fff; 
+            padding: 10px; 
+            cursor: pointer; 
+        }
+        input[type="color"] { 
+            height: 50px; 
+            padding: 2px; 
+            cursor: pointer; 
+            border: 1px solid #ccc; 
+            background: none; 
+        }
+
+        .seletor-modo { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+        .btn-modo { 
+            flex: 1; 
+            padding: 10px; 
+            border: 2px solid #ccc; 
+            background: white; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: #555; 
+        }
+        .btn-modo.ativo { 
+            border-color: var(--azul-atacadao); 
+            background: var(--azul-atacadao); 
+            color: white; 
+        }
+
+        .modo-leitura { 
+            display: none; 
+        }
+        .modo-leitura.ativo { 
+            display: block; 
+        }
+        #camera-scanner { 
+            width: 100%; 
+            height: 250px; 
+            background: #000; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-top: 10px; 
+        }
+        
+        .campo-leitor-fisico { 
+            background: #e8f5e9; 
+            border: 2px dashed #2e7d32 !important; 
+            text-align: center; 
+            font-weight: bold; 
+            color: #2e7d32; 
+        }
+        
+        .total-box { 
+            background: #e3f2fd; 
+            padding: 15px; 
+            border-radius: 6px; 
+            text-align: right; 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: var(--azul-atacadao); 
+            margin-top: 10px; 
+            transition: color 0.3s; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            font-size: 14px; 
+        }
+        th, td { 
+            padding: 10px; 
+            text-align: left; 
+            border-bottom: 1px solid #eee; 
+        }
+        th { 
+            background: #f0f0f0; 
+        }
+
+        .item-historico {
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--azul-atacadao);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* 🖼️ Alinhado perfeitamente com a largura total dos cards, cobrindo as bordas laterais */
+        .logo-loja-fundo {
+            display: block;
+            width: 100%; 
+            height: 200px; 
+            margin: 20px auto 5px auto;
+            border-radius: 8px; 
+            opacity: 0.9; 
+            object-fit: cover; 
+        }
+
+        .rodape-creditos { 
+            text-align: center; 
+            font-size: 13px; 
+            color: #666; 
+            padding: 15px 10px; 
+            margin-top: 15px; 
+            border-top: 1px solid #e0e0e0; 
+            background: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+        }
+        .rodape-creditos strong { 
+            color: var(--azul-atacadao); 
+            transition: color 0.3s; 
+        }
     </style>
 </head>
 <body>
@@ -75,12 +244,24 @@
                 <button id="btn-modo-camera" class="btn-modo ativo" onclick="mudarModoLeitor('camera')">📷 Câmera</button>
                 <button id="btn-modo-fisico" class="btn-modo" onclick="mudarModoLeitor('fisico')">🔌 Leitor Físico</button>
             </div>
-            <div id="entrada-camera" class="modo-leitura ativo"><div id="camera-scanner"></div><input type="text" id="codigo-manual" placeholder="Manual..."><button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button></div>
-            <div id="entrada-fisico" class="modo-leitura"><input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off"></div>
+            <div id="entrada-camera" class="modo-leitura ativo">
+                <div id="camera-scanner"></div>
+                <input type="text" id="codigo-manual" placeholder="Manual...">
+                <button class="btn-acao" onclick="biparManual('codigo-manual')">Lançar Manual</button>
+            </div>
+            <div id="entrada-fisico" class="modo-leitura">
+                <input type="text" id="codigo-leitor-fisico" class="campo-leitor-fisico" placeholder="PRONTO PARA BIPAR..." autocomplete="off">
+            </div>
         </div>
+        
         <div class="card">
             <h2>🛒 Cupom Fiscal Atual</h2>
-            <table><thead><tr><th>Item</th><th>Qtd</th><th>Preço</th></tr></thead><tbody id="lista-carrinho"></tbody></table>
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Qtd</th><th>Preço</th></tr>
+                </thead>
+                <tbody id="lista-carrinho"></tbody>
+            </table>
             <div class="total-box">Total: R$ <span id="valor-total">0.00</span></div>
             <button class="btn-acao" style="background: #2e7d32; margin-top: 15px;" onclick="finalizarCompra()">🔒 Finalizar Emissão</button>
         </div>
@@ -103,6 +284,7 @@
             
             <button class="btn-acao" style="background: #4caf50; margin-top: 18px;" onclick="salvarConfig()">Salvar Configurações</button>
         </div>
+        
         <div class="card">
             <h2>➕ Cadastrar Produto</h2>
             <input type="text" id="cad-codigo" placeholder="Código de Barras">
@@ -110,9 +292,15 @@
             <input type="number" step="0.01" id="cad-preco" placeholder="Preço (Ex: 5.99)">
             <button class="btn-acao" onclick="salvarProduto()">Salvar no Sistema</button>
         </div>
+        
         <div class="card">
             <h2>📦 Estoque Cadastrado</h2>
-            <table><thead><tr><th>Código</th><th>Produto</th><th>Preço</th></tr></thead><tbody id="lista-estoque"></tbody></table>
+            <table>
+                <thead>
+                    <tr><th>Código</th><th>Produto</th><th>Preço</th></tr>
+                </thead>
+                <tbody id="lista-estoque"></tbody>
+            </table>
             <button class="btn-acao btn-limpar" onclick="limparEstoque()">Apagar Todo o Estoque</button>
         </div>
 
@@ -121,7 +309,9 @@
     </div>
 
     <div id="tela-historico" class="tela">
-        <div class="card"><h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2></div>
+        <div class="card">
+            <h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2>
+        </div>
         <div class="card" id="lista-historico"></div>
         <button class="btn-acao btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
         
@@ -136,15 +326,11 @@
     </nav>
 
     <script>
-        // Carrega configurações de texto, imagem e COR do localStorage
         let nomeLoja = localStorage.getItem("nomeLoja") || "Mercado";
         let logoLoja = localStorage.getItem("logoLoja") || "https://cdn-icons-png.flaticon.com/512/3081/3081840.png";
-        let corLoja = localStorage.getItem("corLoja") || "#1565c0"; // Azul padrão inicial
+        let corLoja = localStorage.getItem("corLoja") || "#1565c0";
 
-        // Aplica a cor salva nas variáveis do CSS
         document.documentElement.style.setProperty('--azul-atacadao', corLoja);
-
-        // Preenche os campos com os valores atuais nas configurações
         document.getElementById("nome-loja-topo").innerText = nomeLoja;
         document.getElementById("config-nome-loja").value = nomeLoja;
         document.getElementById("config-cor-loja").value = corLoja;
@@ -155,7 +341,6 @@
             document.getElementById("logo-loja-historico").src = logoLoja;
         }
 
-        // Salva as configurações de nome, cor e processa o arquivo de foto
         function salvarConfig() {
             let novoNome = document.getElementById("config-nome-loja").value;
             let novaCor = document.getElementById("config-cor-loja").value;
@@ -165,12 +350,11 @@
             
             let fileInput = document.getElementById("config-logo-loja");
             
-            // Verifica se o usuário alterou a foto
             if (fileInput.files && fileInput.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     localStorage.setItem("logoLoja", e.target.result);
-                    alert("Todas as configurações e imagem foram salvas!");
+                    alert("Configurações salvas com sucesso!");
                     location.reload();
                 };
                 reader.readAsDataURL(fileInput.files[0]);
@@ -180,7 +364,6 @@
             }
         }
 
-        // Lógica interna padrão do PDV
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
         let historico = JSON.parse(localStorage.getItem("historicoCompras")) || [];
         let carrinho = [];
@@ -204,7 +387,13 @@
         document.addEventListener("click", () => { focarLeitorFisico(); });
 
         document.getElementById("codigo-leitor-fisico").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") { event.preventDefault(); if (this.value.trim() !== "") { biparProduto(this.value.trim()); this.value = ""; } }
+            if (event.key === "Enter") { 
+                event.preventDefault(); 
+                if (this.value.trim() !== "") { 
+                    biparProduto(this.value.trim()); 
+                    this.value = ""; 
+                } 
+            }
         });
 
         function mudarAba(aba) {
@@ -223,7 +412,11 @@
             }
         }
 
-        function pararCamera() { if (html5QrcodeScanner) html5QrcodeScanner.stop().then(() => html5QrcodeScanner = null).catch(() => {}); }
+        function pararCamera() { 
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => html5QrcodeScanner = null).catch(() => {});
+            } 
+        }
 
         function biparProduto(codigo) {
             let produto = produtos[codigo];
@@ -240,11 +433,22 @@
             }
         }
 
-        function biparManual(id) { let c = document.getElementById(id); if (c.value) { biparProduto(c.value); c.value = ""; } }
+        function biparManual(id) { 
+            let c = document.getElementById(id); 
+            if (c.value) { 
+                biparProduto(c.value); 
+                c.value = ""; 
+            } 
+        }
 
         function renderizarCarrinho() {
-            let tbody = document.getElementById("lista-carrinho"); tbody.innerHTML = ""; let total = 0;
-            carrinho.forEach(i => { total += i.preco; tbody.innerHTML += `<tr><td>${i.nome}</td><td>1</td><td>R$ ${i.preco.toFixed(2)}</td></tr>`; });
+            let tbody = document.getElementById("lista-carrinho"); 
+            tbody.innerHTML = ""; 
+            let total = 0;
+            carrinho.forEach(i => { 
+                total += i.preco; 
+                tbody.innerHTML += `<tr><td>${i.nome}</td><td>1</td><td>R$ ${i.preco.toFixed(2)}</td></tr>`; 
+            });
             document.getElementById("valor-total").innerText = total.toFixed(2);
         }
 
@@ -253,13 +457,21 @@
             let total = carrinho.reduce((s, i) => s + i.preco, 0);
             historico.unshift({ data: new Date().toLocaleString(), itens: carrinho.map(i => i.nome).join(", "), total: total });
             localStorage.setItem("historicoCompras", JSON.stringify(historico));
-            carrinho = []; renderizarCarrinho(); renderizarHistorico(); alert("Venda registrada!");
+            carrinho = []; 
+            renderizarCarrinho(); 
+            renderizarHistorico(); 
+            alert("Venda registrada com sucesso!");
             focarLeitorFisico();
         }
 
         function renderizarHistorico() {
-            let container = document.getElementById("lista-historico"); let totalFat = 0; container.innerHTML = "";
-            historico.forEach(v => { totalFat += v.total; container.innerHTML += `<div class="item-historico">📅 ${v.data}<br>💰 R$ ${v.total.toFixed(2)}</div>`; });
+            let container = document.getElementById("lista-historico"); 
+            let totalFat = 0; 
+            container.innerHTML = "";
+            historico.forEach(v => { 
+                totalFat += v.total; 
+                container.innerHTML += `<div class="item-historico">📅 ${v.data}<br><b>Itens:</b> ${v.itens}<br>💰 R$ ${v.total.toFixed(2)}</div>`; 
+            });
             document.getElementById("faturamento-total").innerText = totalFat.toFixed(2);
         }
 
@@ -267,8 +479,10 @@
             let cod = document.getElementById("cad-codigo").value;
             let nome = document.getElementById("cad-nome").value;
             let preco = parseFloat(document.getElementById("cad-preco").value);
-            if (!cod || !nome || isNaN(preco)) return alert("Preencha tudo!");
-            produtos[cod] = { nome, preco }; localStorage.setItem("meusProdutos", JSON.stringify(produtos));
+            if (!cod || !nome || isNaN(preco)) return alert("Preencha todos os campos corretamente!");
+            
+            produtos[cod] = { nome, preco }; 
+            localStorage.setItem("meusProdutos", JSON.stringify(produtos));
             renderizarEstoque(); 
             alert("Produto salvo!");
             
@@ -279,14 +493,35 @@
         }
 
         function renderizarEstoque() {
-            let tbody = document.getElementById("lista-estoque"); tbody.innerHTML = "";
-            for (let c in produtos) tbody.innerHTML += `<tr><td>${c}</td><td>${produtos[c].nome}</td><td>R$ ${produtos[c].preco.toFixed(2)}</td></tr>`;
+            let tbody = document.getElementById("lista-estoque"); 
+            tbody.innerHTML = "";
+            for (let c in produtos) {
+                tbody.innerHTML += `<tr><td>${c}</td><td>${produtos[c].nome}</td><td>R$ ${produtos[c].preco.toFixed(2)}</td></tr>`;
+            }
         }
 
-        function limparEstoque() { if(confirm("Apagar estoque?")) { localStorage.removeItem("meusProdutos"); produtos = {}; renderizarEstoque(); } }
-        function limparHistorico() { if(confirm("Apagar histórico?")) { localStorage.removeItem("historicoCompras"); historico = []; renderizarHistorico(); } }
+        function limparEstoque() { 
+            if(confirm("Deseja apagar todo o estoque cadastrado?")) { 
+                localStorage.removeItem("meusProdutos"); 
+                produtos = {}; 
+                renderizarEstoque(); 
+            } 
+        }
+        
+        function limparHistorico() { 
+            if(confirm("Deseja limpar todo o histórico de vendas?")) { 
+                localStorage.removeItem("historicoCompras"); 
+                historico = []; 
+                renderizarHistorico(); 
+            } 
+        }
 
-        window.onload = () => { carregarLogos(); renderizarEstoque(); renderizarHistorico(); iniciarCamera(); };
+        window.onload = () => { 
+            carregarLogos(); 
+            renderizarEstoque(); 
+            renderizarHistorico(); 
+            iniciarCamera(); 
+        };
     </script>
 </body>
 </html>
