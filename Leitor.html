@@ -380,7 +380,7 @@
             }
         }
 
-        // 🧠 Sistema Inteligente de Confirmação Tripla para Sair
+        // 🧠 Confirmação Tripla Corrigida (Sem travar o JS)
         let etapaSair = 0;
         function passoSair() {
             etapaSair++;
@@ -408,7 +408,7 @@
             `;
         }
 
-        function ejecutarSair() {
+        function executarSair() {
             window.location.href = 'https://google.com';
         }
 
@@ -479,6 +479,7 @@
                 focarLeitorFisico();
             } else {
                 alert(`Produto com código ${codigo} não encontrado! Redirecionando para cadastro...`);
+                document.getElementById("cad-codigo").value = Self;
                 document.getElementById("cad-codigo").value = codigo;
                 mudarAba('cadastro');
                 setTimeout(() => { document.getElementById("cad-nome").focus(); }, 250);
@@ -521,5 +522,4 @@
             let totalFat = 0; 
             container.innerHTML = "";
             historico.forEach(v => { 
-                totalFat += v.total; 
-                container.innerHTML += `<div class="
+                totalFat +=
