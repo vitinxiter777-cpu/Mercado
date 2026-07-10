@@ -153,7 +153,6 @@
             display: block; 
         }
         
-        /* 📷 Ajustes da Câmera para não cortar nada */
         #camera-scanner { 
             width: 100%; 
             height: auto; 
@@ -166,7 +165,7 @@
         #camera-scanner video {
             width: 100% !important;
             height: auto !important;
-            object-fit: contain !important; /* Garante que o leitor mostre a imagem completa da câmera */
+            object-fit: contain !important; 
         }
         
         .campo-leitor-fisico { 
@@ -213,16 +212,15 @@
             line-height: 1.4;
         }
 
-        /* 🖼️ Imagem Inteligente: Se adapta sozinha ao tamanho original sem cortar nada */
         .logo-loja-fundo {
             display: block;
             width: 100%; 
-            height: auto; /* Deixa o tamanho responder de forma natural */
-            max-height: 380px; /* Evita que imagens verticais fiquem gigantescas */
+            height: auto; 
+            max-height: 380px; 
             margin: 20px auto 5px auto;
             border-radius: 8px; 
             opacity: 0.9; 
-            object-fit: contain; /* Mostra a imagem 100% completa sem cortes */
+            object-fit: contain; 
         }
 
         .rodape-creditos { 
@@ -246,6 +244,7 @@
 
     <header id="nome-loja-topo">Mercado</header>
 
+    <!-- ABA 1: CAIXA -->
     <div id="tela-caixa" class="tela ativa">
         <div class="card">
             <h2>🔌 Escolha a Origem do Bip</h2>
@@ -279,6 +278,7 @@
         <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
+    <!-- ABA 2: CADASTRO -->
     <div id="tela-cadastro" class="tela">
         <div class="card">
             <h2>⚙️ Configurações do Sistema</h2>
@@ -292,6 +292,12 @@
             <input type="file" id="config-logo-loja" accept="image/*">
             
             <button class="btn-acao" style="background: #4caf50; margin-top: 18px;" onclick="salvarConfig()">Salvar Configurações</button>
+
+            <!-- 🚪 Botão de segurança para Sair da Conta (3 cliques) -->
+            <div id="container-sair" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px;">
+                <label style="font-size: 14px; font-weight: bold; color: #555;">Conta:</label>
+                <button class="btn-acao btn-limpar" id="btn-sair-main" style="margin-top: 8px;" onclick="passoSair()">🚪 Sair</button>
+            </div>
         </div>
         
         <div class="card">
@@ -317,6 +323,7 @@
         <div class="rodape-creditos">Criado por <strong>Victor Caldeira de Moura</strong></div>
     </div>
 
+    <!-- ABA 3: HISTÓRICO -->
     <div id="tela-historico" class="tela">
         <div class="card">
             <h2>📊 Faturamento: R$ <span id="faturamento-total">0.00</span></h2>
@@ -368,9 +375,41 @@
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                alert("Configurações e cores updated!");
+                alert("Configurações e cores atualizadas!");
                 location.reload();
             }
+        }
+
+        // 🧠 Confirmação Tripla Corrigida (Sem travar o JS)
+        let etapaSair = 0;
+        function passoSair() {
+            etapaSair++;
+            let btn = document.getElementById("btn-sair-main");
+            if (etapaSair === 1) {
+                btn.innerText = "⚠️ Sair mesmo";
+                btn.style.background = "#ff9800";
+            } else if (etapaSair === 2) {
+                document.getElementById("container-sair").innerHTML = `
+                    <label style="font-size: 14px; font-weight: bold; color: #555;">Sair da conta?</label>
+                    <div style="font-size: 16px; font-weight: bold; text-align: center; margin-top: 8px; color: #d32f2f;">❓ Sim ou não?</div>
+                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                        <button class="btn-acao" style="background: #d32f2f; margin: 0;" onclick="executarSair()">Sim</button>
+                        <button class="btn-acao" style="background: #777; margin: 0;" onclick="resetarSair()">Não</button>
+                    </div>
+                `;
+            }
+        }
+
+        function resetarSair() {
+            etapaSair = 0;
+            document.getElementById("container-sair").innerHTML = `
+                <label style="font-size: 14px; font-weight: bold; color: #555;">Conta:</label>
+                <button class="btn-acao btn-limpar" id="btn-sair-main" style="margin-top: 8px;" onclick="passoSair()">🚪 Sair</button>
+            `;
+        }
+
+        function executarSair() {
+            window.location.href = 'https://google.com';
         }
 
         let produtos = JSON.parse(localStorage.getItem("meusProdutos")) || {};
@@ -440,6 +479,7 @@
                 focarLeitorFisico();
             } else {
                 alert(`Produto com código ${codigo} não encontrado! Redirecionando para cadastro...`);
+                document.getElementById("cad-codigo").value = Self;
                 document.getElementById("cad-codigo").value = codigo;
                 mudarAba('cadastro');
                 setTimeout(() => { document.getElementById("cad-nome").focus(); }, 250);
@@ -482,45 +522,4 @@
             let totalFat = 0; 
             container.innerHTML = "";
             historico.forEach(v => { 
-                totalFat += v.total; 
-                container.innerHTML += `<div class="item-historico">📅 ${v.data}<br><b>Itens:</b> ${v.itens}<br>💰 R$ ${v.total.toFixed(2)}</div>`; 
-            });
-            document.getElementById("faturamento-total").innerText = totalFat.toFixed(2);
-        }
-
-        function salvarProduto() {
-            let cod = document.getElementById("cad-codigo").value;
-            let nome = document.getElementById("cad-nome").value;
-            let preco = parseFloat(document.getElementById("cad-preco").value);
-            if (!cod || !nome || isNaN(preco)) return alert("Preencha todos os campos corretamente!");
-            
-            produtos[cod] = { nome, preco }; 
-            localStorage.setItem("meusProdutos", JSON.stringify(produtos));
-            renderizarEstoque(); 
-            alert("Produto salvo!");
-            
-            document.getElementById("cad-codigo").value = "";
-            document.getElementById("cad-nome").value = "";
-            document.getElementById("cad-preco").value = "";
-            mudarAba('caixa');
-        }
-
-        function renderizarEstoque() {
-            let tbody = document.getElementById("lista-estoque"); 
-            tbody.innerHTML = "";
-            for (let c in produtos) {
-                tbody.innerHTML += `<tr><td>${c}</td><td>${produtos[c].nome}</td><td>R$ ${produtos[c].preco.toFixed(2)}</td></tr>`;
-            }
-        }
-
-        function limparEstoque() { 
-            if(confirm("Deseja apagar todo o estoque cadastrado?")) { 
-                localStorage.removeItem("meusProdutos"); 
-                produtos = {}; 
-                renderizarEstoque(); 
-            } 
-        }
-        
-        function limparHistorico() { 
-            if(confirm("Deseja limpar todo o histórico de vendas?")) { 
-                localStorage.removeItem(
+                totalFat +=
