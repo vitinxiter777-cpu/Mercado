@@ -20,7 +20,7 @@
             background-color: var(--cinza-fundo); 
             color: #333; 
             padding-bottom: 80px; 
-            overflow-x: hidden; /* 🛡️ Proteção contra qualquer transbordamento/overflow horizontal */
+            overflow-x: hidden; 
         }
         
         header { 
@@ -152,13 +152,21 @@
         .modo-leitura.ativo { 
             display: block; 
         }
+        
+        /* 📷 Ajustes da Câmera para não cortar nada */
         #camera-scanner { 
             width: 100%; 
-            height: 250px; 
+            height: auto; 
+            min-height: 250px;
             background: #000; 
             border-radius: 8px; 
             overflow: hidden; 
             margin-top: 10px; 
+        }
+        #camera-scanner video {
+            width: 100% !important;
+            height: auto !important;
+            object-fit: contain !important; /* Garante que o leitor mostre a imagem completa da câmera */
         }
         
         .campo-leitor-fisico { 
@@ -205,15 +213,16 @@
             line-height: 1.4;
         }
 
-        /* 🖼️ Alinhado perfeitamente com a largura total dos cards, cobrindo as bordas laterais */
+        /* 🖼️ Imagem Inteligente: Se adapta sozinha ao tamanho original sem cortar nada */
         .logo-loja-fundo {
             display: block;
             width: 100%; 
-            height: 200px; 
+            height: auto; /* Deixa o tamanho responder de forma natural */
+            max-height: 380px; /* Evita que imagens verticais fiquem gigantescas */
             margin: 20px auto 5px auto;
             border-radius: 8px; 
             opacity: 0.9; 
-            object-fit: cover; 
+            object-fit: contain; /* Mostra a imagem 100% completa sem cortes */
         }
 
         .rodape-creditos { 
@@ -359,7 +368,7 @@
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                alert("Configurações e cores atualizadas!");
+                alert("Configurações e cores updated!");
                 location.reload();
             }
         }
@@ -408,7 +417,11 @@
         function iniciarCamera() {
             if (!html5QrcodeScanner && modoAtualLeitor === 'camera') {
                 html5QrcodeScanner = new Html5Qrcode("camera-scanner");
-                html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (c) => biparProduto(c)).catch(() => {});
+                html5QrcodeScanner.start(
+                    { facingMode: "environment" }, 
+                    { fps: 15, qrbox: (width, height) => { return { width: width * 0.8, height: height * 0.6 }; } }, 
+                    (c) => biparProduto(c)
+                ).catch(() => {});
             }
         }
 
